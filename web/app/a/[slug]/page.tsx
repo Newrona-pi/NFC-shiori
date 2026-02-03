@@ -35,7 +35,7 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
 
     const { data: tag } = await serviceClient
         .from('tags')
-        .select('id, display_name, slug, latest_audio_id')
+        .select('id, display_name, slug, current_audio_id')
         .eq('slug', slug)
         .single()
 
@@ -59,7 +59,7 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
         <ListenerView
             tag={tag}
             audios={audios || []}
-            latestAudioId={tag.latest_audio_id || (audios && audios[0]?.id) || null}
+            latestAudioId={tag.current_audio_id || (audios && audios[0]?.id) || null}
         />
     )
 }
