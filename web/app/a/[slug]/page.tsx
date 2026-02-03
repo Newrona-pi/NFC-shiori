@@ -7,23 +7,24 @@ const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret')
 
 export default async function ListenerPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
+    // For MVP phase 1, we allow direct access without cookie verification (SDM/Tap verification skipped).
+    // In future, uncomment this to enforce "Tap Only" access.
+    /*
     const cookieStore = await cookies()
     const token = cookieStore.get('nfc_session')
 
     if (!token) {
-        redirect('/error?msg=session_expired') // Or show "Please tap tag" page
+        redirect('/error?msg=session_expired')
     }
-
-    let tagId: string
 
     try {
         const { payload } = await jwtVerify(token.value, SECRET)
-        tagId = payload.tagId as string
-        // We could also check payload.exp here but verify checks signature and exp usually.
+        // tagId = payload.tagId as string
     } catch (e) {
-        redirect('/error?msg=session_expired')
-        return
+        redirect('/error?msg=invalid_session')
     }
+    */
+
 
     // Fetch Tag & Audios (Service Role)
     const { createClient } = require('@supabase/supabase-js')
@@ -43,9 +44,10 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
     }
 
     // Security Check: Ensure the token's tagId matches the requested slug's tagId
-    if (tag.id !== tagId) {
-        redirect('/error?msg=invalid_tag') // Mismatch between cookie and URL
-    }
+    // if (tag.id !== tagId) {
+    //    redirect('/error?msg=invalid_tag') // Mismatch between cookie and URL
+    // }
+
 
     const { data: audios } = await serviceClient
         .from('audios')
