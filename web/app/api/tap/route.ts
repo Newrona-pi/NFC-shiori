@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
             // Equal: check time
             const lastAt = new Date(tag.last_ctr_at).getTime()
             const now = Date.now()
-            if (now - lastAt > 10000) { // 10s
+            if (now - lastAt > 600000) { // 10 minutes cache window
                 return NextResponse.redirect(new URL('/error?msg=replay_timeout', req.url))
             }
         }
