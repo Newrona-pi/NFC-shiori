@@ -1,1 +1,70 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --foreground-rgb: 255, 255, 255;
+        --background-start-rgb: 10, 10, 15;
+        --background-end-rgb: 20, 20, 35;
+
+        /* V-Tuber / Holographic Palette */
+        --color-holo-cyan: #00fff2;
+        --color-holo-mag: #ff00ff;
+        --color-holo-yel: #ffff00;
+    }
+
+    body {
+        background: linear-gradient(to bottom,
+                rgb(var(--background-start-rgb)),
+                rgb(var(--background-end-rgb)));
+        font-family: var(--font-zen), sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-outfit), sans-serif;
+    }
+}
+
+@layer utilities {
+    .text-shadow-glow {
+        text-shadow: 0 0 10px rgba(0, 255, 242, 0.5), 0 0 20px rgba(0, 255, 242, 0.3);
+    }
+
+    .glass-panel {
+        @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
+    }
+
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

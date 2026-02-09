@@ -1,21 +1,37 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Play, Pause, Loader2 } from 'lucide-react'
+import { Play, Pause, Loader2, RefreshCw } from 'lucide-react'
 
-export function AudioPlayer({ audioId, autoPlay }: { audioId: string, autoPlay?: boolean }) {
+// Audio visualizer bars (simulated)
+const Bar = ({ delay, playing }: { delay: number, playing: boolean }) => (
+    <div
+        className={`w-1 bg-cyan-400 rounded-full transition-all duration-300 ${playing ? 'animate-pulse' : 'h-2'}`}
+        style={{
+            height: playing ? `${Math.random() * 20 + 10}px` : '4px',
+            animationDuration: '0.8s',
+            animationDelay: `${delay}s`,
+            animationIterationCount: 'infinite'
+        }}
+    />
+)
+
+export function AudioPlayer({ audioId, autoPlay, title }: { audioId: string, autoPlay?: boolean, title?: string }) {
     const [url, setUrl] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const [playing, setPlaying] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [progress, setProgress] = useState(0)
     const audioRef = useRef<HTMLAudioElement>(null)
 
     useEffect(() => {
         let mounted = true
+        setProgress(0)
+        setPlaying(false)
 
         async function fetchUrl() {
             setLoading(true)
+            setError(null)
             try {
                 const res = await fetch('/api/public/audio/signed-url', {
                     method: 'POST',
@@ -26,11 +42,9 @@ export function AudioPlayer({ audioId, autoPlay }: { audioId: string, autoPlay?:
                 const data = await res.json()
                 if (mounted) {
                     setUrl(data.signedUrl)
-                    // If autoplay requested, try to play when URL is ready
-                    // But browser might block it.
                 }
             } catch (err) {
-                if (mounted) setError('Could not load audio.')
+                if (mounted) setError('Voice data unavailable.')
             } finally {
                 if (mounted) setLoading(false)
             }
@@ -44,7 +58,7 @@ export function AudioPlayer({ audioId, autoPlay }: { audioId: string, autoPlay?:
     useEffect(() => {
         if (url && autoPlay && audioRef.current) {
             audioRef.current.play().catch(() => {
-                console.log("Autoplay blocked")
+                console.log("Autoplay blocked by browser policy")
             })
         }
     }, [url, autoPlay])
@@ -58,34 +72,89 @@ export function AudioPlayer({ audioId, autoPlay }: { audioId: string, autoPlay?:
         }
     }
 
-    if (error) return <div className="text-red-500 text-sm">{error}</div>
+    const handleTimeUpdate = () => {
+        if (audioRef.current) {
+            const current = audioRef.current.currentTime
+            const duration = audioRef.current.duration || 1
+            setProgress((current / duration) * 100)
+        }
+    }
+
+    if (error) return (
+        <div className="w-full h-48 flex flex-col items-center justify-center border border-red-500/30 bg-red-950/20 rounded-2xl text-red-400 font-mono text-sm">
+            <span className="mb-2">⚠ ERROR</span>
+            {error}
+        </div>
+    )
 
     return (
-        <div className="w-full">
+        <div className="w-full relative group">
             {url && (
                 <audio
                     ref={audioRef}
                     src={url}
                     onPlay={() => setPlaying(true)}
                     onPause={() => setPlaying(false)}
-                    onEnded={() => setPlaying(false)}
+                    onEnded={() => { setPlaying(false); setProgress(0); }}
+                    onTimeUpdate={handleTimeUpdate}
                 />
             )}
 
-            <div className="flex flex-col items-center justify-center p-8 bg-slate-900 rounded-2xl shadow-xl text-white">
-                <Button
-                    size="lg"
-                    className="h-20 w-20 rounded-full text-2xl mb-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm"
-                    onClick={togglePlay}
-                    disabled={loading || !url}
-                >
-                    {loading ? <Loader2 className="animate-spin h-8 w-8 text-white" /> : (
-                        playing ? <Pause className="h-8 w-8 text-white fill-current" /> : <Play className="h-8 w-8 text-white fill-current translate-x-1" />
-                    )}
-                </Button>
-                <p className="text-slate-400 text-sm mt-2">
-                    {loading ? 'Decrypting Audio...' : (playing ? 'Now Playing' : 'Tap to Play')}
-                </p>
+            {/* Main Player Card */}
+            <div className="relative overflow-hidden rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl p-8 flex flex-col items-center justify-center transition-transform duration-500 hover:scale-[1.02]">
+
+                {/* Background Glow Effect */}
+                <div className={`absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-purple-500/10 opacity-50 ${playing ? 'animate-pulse' : ''}`} />
+
+                {/* Cyber Circle (Play Button Wrapper) */}
+                <div className="relative z-10 mb-6">
+                    {/* Rotating Rings */}
+                    <div className={`absolute inset-0 -m-4 border border-cyan-500/20 rounded-full ${playing ? 'animate-[spin_4s_linear_infinite]' : ''}`} />
+                    <div className={`absolute inset-0 -m-2 border border-purple-500/20 rounded-full ${playing ? 'animate-[spin_6s_linear_infinite_reverse]' : ''}`} />
+
+                    <button
+                        onClick={togglePlay}
+                        disabled={loading || !url}
+                        className={`
+                            relative w-24 h-24 rounded-full flex items-center justify-center
+                            bg-slate-950 border border-white/10 shadow-[0_0_30px_rgba(0,255,242,0.2)]
+                            transition-all duration-300 hover:shadow-[0_0_50px_rgba(0,255,242,0.4)] hover:scale-105 active:scale-95
+                            disabled:opacity-50 disabled:cursor-not-allowed
+                        `}
+                    >
+                        {loading ? (
+                            <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                        ) : playing ? (
+                            <Pause className="w-8 h-8 text-cyan-400 fill-current" />
+                        ) : (
+                            <Play className="w-8 h-8 text-cyan-400 fill-current ml-1" />
+                        )}
+                    </button>
+                </div>
+
+                {/* Title & Status */}
+                <div className="relative z-10 text-center space-y-2 max-w-xs">
+                    <h2 className="text-white font-bold text-lg tracking-wide line-clamp-1 font-outfit uppercase">
+                        {title || 'Unknown Track'}
+                    </h2>
+                    <div className="flex items-center justify-center space-x-1 h-6">
+                        {/* Fake Visualizer */}
+                        {[...Array(5)].map((_, i) => (
+                            <Bar key={i} delay={i * 0.1} playing={playing} />
+                        ))}
+                    </div>
+                    <p className="text-cyan-200/60 text-xs font-mono tracking-widest uppercase">
+                        {loading ? 'Decrypting...' : (playing ? 'Playing Audio' : 'Ready to Play')}
+                    </p>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-800">
+                    <div
+                        className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 shadow-[0_0_10px_#00fff2]"
+                        style={{ width: `${progress}%`, transition: 'width 0.1s linear' }}
+                    />
+                </div>
             </div>
         </div>
     )

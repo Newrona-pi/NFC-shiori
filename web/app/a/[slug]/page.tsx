@@ -1,31 +1,14 @@
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
-import { jwtVerify } from 'jose'
 import { ListenerView } from './listener-view'
 
-const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret')
+// For Public Access Mode (No SDM / No Cookie required)
 
 export default async function ListenerPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
 
-    // Verify NFC session cookie (issued by /api/tap after SDM verification)
-    const cookieStore = await cookies()
-    const token = cookieStore.get('nfc_session')
-
-    if (!token) {
-        redirect('/error?msg=please_tap_tag')
-    }
-
-    let tagId: string
-
-    try {
-        const { payload } = await jwtVerify(token.value, SECRET)
-        tagId = payload.tagId as string
-    } catch (e) {
-        redirect('/error?msg=session_expired')
-    }
-
     // Fetch Tag & Audios (Service Role)
+    // We use service role because 'audios' table might be protected by RLS (only owners can see).
+    // But here we want public access for listeners.
     const { createClient } = require('@supabase/supabase-js')
     const serviceClient = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,16 +25,13 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
         redirect('/error?msg=tag_not_found')
     }
 
-    // Security Check: Ensure the token's tagId matches the requested slug's tagId
-    if (tag.id !== tagId) {
-        redirect('/error?msg=invalid_tag')
-    }
-
     const { data: audios } = await serviceClient
         .from('audios')
         .select('id, title, duration_ms, created_at')
         .eq('tag_id', tag.id)
         .order('created_at', { ascending: false })
+
+    // No security check against cookie tagId because we allow direct access.
 
     return (
         <ListenerView
