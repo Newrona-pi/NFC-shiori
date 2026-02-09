@@ -1,22 +1,23 @@
 import type { Metadata } from 'next'
-import { Outfit, Zen_Kaku_Gothic_New } from 'next/font/google'
+import { M_PLUS_Rounded_1c, Varela_Round } from 'next/font/google'
 import './globals.css'
 
-const outfit = Outfit({
+const mplus = M_PLUS_Rounded_1c({
+    weight: ['100', '300', '400', '500', '700', '800'],
     subsets: ['latin'],
-    variable: '--font-outfit',
+    variable: '--font-mplus',
     display: 'swap',
 })
 
-const zenKaku = Zen_Kaku_Gothic_New({
-    weight: ['300', '400', '500', '700'],
+const varela = Varela_Round({
+    weight: ['400'],
     subsets: ['latin'],
-    variable: '--font-zen',
+    variable: '--font-varela',
     display: 'swap',
 })
 
 export const metadata: Metadata = {
-    title: 'NFC Shiori | Secure Audio Moment',
+    title: 'NFC Shiori ✨ | 特別な声をあなたに',
     description: 'Listen to exclusive moments via NFC.',
 }
 
@@ -26,8 +27,8 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="ja" className={`${outfit.variable} ${zenKaku.variable}`}>
-            <body className="font-sans antialiased bg-slate-950 text-white selection:bg-cyan-500 selection:text-white">
+        <html lang="ja" className={`${mplus.variable} ${varela.variable}`}>
+            <body className="font-sans antialiased bg-[#1a1625] text-white selection:bg-pink-400 selection:text-white">
                 {children}
             </body>
         </html>
