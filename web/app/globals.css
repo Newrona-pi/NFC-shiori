@@ -1,48 +1,48 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-    :root {
-        --foreground-rgb: 255, 255, 255;
-        --background-start-rgb: 10, 10, 15;
-        --background-end-rgb: 20, 20, 35;
+:root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 10, 10, 15;
+    --background-end-rgb: 20, 20, 35;
 
-        /* V-Tuber / Holographic Palette */
-        --color-holo-cyan: #00fff2;
-        --color-holo-mag: #ff00ff;
-        --color-holo-yel: #ffff00;
-    }
-
-    body {
-        background: linear-gradient(to bottom,
-                rgb(var(--background-start-rgb)),
-                rgb(var(--background-end-rgb)));
-        font-family: var(--font-zen), sans-serif;
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        font-family: var(--font-outfit), sans-serif;
-    }
+    /* V-Tuber / Holographic Palette */
+    --color-holo-cyan: #00fff2;
+    --color-holo-mag: #ff00ff;
+    --color-holo-yel: #ffff00;
 }
 
-@layer utilities {
-    .text-shadow-glow {
-        text-shadow: 0 0 10px rgba(0, 255, 242, 0.5), 0 0 20px rgba(0, 255, 242, 0.3);
-    }
+body {
+    color: rgb(var(--foreground-rgb));
+    background: linear-gradient(to bottom,
+            rgb(var(--background-start-rgb)),
+            rgb(var(--background-end-rgb)));
+    font-family: var(--font-zen), sans-serif;
+}
 
-    .glass-panel {
-        @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
-    }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-outfit), sans-serif;
+}
 
-    .animate-float {
-        animation: float 6s ease-in-out infinite;
-    }
+/* Custom Utilities */
+.text-shadow-glow {
+    text-shadow: 0 0 10px rgba(0, 255, 242, 0.5), 0 0 20px rgba(0, 255, 242, 0.3);
+}
+
+.glass-panel {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
 }
 
 @keyframes float {
