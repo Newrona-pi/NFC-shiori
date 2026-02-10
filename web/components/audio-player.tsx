@@ -56,10 +56,49 @@ export function AudioPlayer({ audioId, autoPlay, title }: { audioId: string, aut
     }, [audioId])
 
     useEffect(() => {
-        if (url && autoPlay && audioRef.current) {
-            audioRef.current.play().catch(() => {
-                console.log("Autoplay blocked")
-            })
+        let interactionCleanup = () => { }
+
+        const playAudio = async () => {
+            if (url && autoPlay && audioRef.current) {
+                try {
+                    await audioRef.current.play()
+                } catch (error) {
+                    console.log("Autoplay blocked, waiting for interaction")
+
+                    const handleInteraction = () => {
+                        if (audioRef.current) {
+                            audioRef.current.play()
+                                .then(() => {
+                                    // Success! Remove all listeners
+                                    ['click', 'touchstart', 'keydown', 'scroll'].forEach(event =>
+                                        document.removeEventListener(event, handleInteraction)
+                                    )
+                                })
+                                .catch((e) => {
+                                    console.log("Still blocked on interaction", e)
+                                })
+                        }
+                    }
+
+                    // Add listeners
+                    ['click', 'touchstart', 'keydown', 'scroll'].forEach(event =>
+                        document.addEventListener(event, handleInteraction, { once: true })
+                    )
+
+                    // Setup cleanup function
+                    interactionCleanup = () => {
+                        ['click', 'touchstart', 'keydown', 'scroll'].forEach(event =>
+                            document.removeEventListener(event, handleInteraction)
+                        )
+                    }
+                }
+            }
+        }
+
+        playAudio()
+
+        return () => {
+            interactionCleanup()
         }
     }, [url, autoPlay])
 
