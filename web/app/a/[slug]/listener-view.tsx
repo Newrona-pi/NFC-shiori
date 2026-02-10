@@ -33,7 +33,7 @@ interface Tag {
 
 export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag, audios: Audio[], latestAudioId: string | null }) {
     const [currentId, setCurrentId] = useState<string | null>(latestAudioId)
-    const [autoPlay, setAutoPlay] = useState(false)
+    const [autoPlay, setAutoPlay] = useState(true)
 
     const handlePlay = (id: string) => {
         if (currentId !== id) {
