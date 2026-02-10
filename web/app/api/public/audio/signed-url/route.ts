@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-// import { jwtVerify } from 'jose' // No JWT for Public Access
-
-// const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret')
+import { createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
-    // 1. Verify Cookie -> REMOVED for public access mode
-    /*
-    const cookie = req.cookies.get('nfc_session')
-    if (!cookie) return ...
-    ...
-    */
-
-    // 2. Parse Body
+    // 1. Parse Body
     const body = await req.json()
     const { audioId } = body
 
@@ -19,12 +10,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Audio ID required' }, { status: 400 })
     }
 
-    // 3. Fetch Audio & Generate Signed URL (Service Role)
-    const { createClient: createServiceClient } = require('@supabase/supabase-js')
-    const serviceClient = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    // 2. Fetch Audio & Generate Signed URL (Service Role)
+    const serviceClient = createServiceClient()
 
     const { data: audio, error: audioError } = await serviceClient
         .from('audios')
@@ -36,7 +23,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Audio not found' }, { status: 404 })
     }
 
-    // 4. Generate Signed URL
+    // 3. Generate Signed URL
     const { data, error } = await serviceClient
         .storage
         .from('audios')

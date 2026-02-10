@@ -21,13 +21,13 @@ const Blob = ({ color, top, left, delay, size }: any) => (
 
 interface Audio {
     id: string
-    title: string
-    duration_ms: number
+    title: string | null
+    duration_ms: number | null
     created_at: string
 }
 
 interface Tag {
-    display_name: string
+    display_name: string | null
     slug: string
 }
 
@@ -78,7 +78,7 @@ export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag, audios:
                             <AudioPlayer
                                 audioId={currentId}
                                 autoPlay={autoPlay}
-                                title={currentAudio?.title}
+                                title={currentAudio?.title ?? undefined}
                             />
                         </div>
                     ) : (
@@ -139,7 +139,7 @@ export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag, audios:
                                     </div>
 
                                     <div className={`text-xs font-bold font-mono z-10 ${isPlaying ? 'text-purple-500' : 'text-slate-400'}`}>
-                                        {Math.round(audio.duration_ms / 1000)}s
+                                        {Math.round((audio.duration_ms ?? 0) / 1000)}s
                                     </div>
 
                                     {/* Hover Sparkle Effect */}

@@ -12,37 +12,29 @@ export interface Database {
       tags: {
         Row: {
           id: string
-          owner_user_id: string
           slug: string
           display_name: string | null
-          uid_hex: string | null
+          password_hash: string
           latest_audio_id: string | null
-          last_ctr: number | null
-          last_ctr_at: string | null
           created_at: string
         }
         Insert: {
           id?: string
-          owner_user_id: string
           slug: string
           display_name?: string | null
-          uid_hex?: string | null
+          password_hash: string
           latest_audio_id?: string | null
-          last_ctr?: number | null
-          last_ctr_at?: string | null
           created_at?: string
         }
         Update: {
           id?: string
-          owner_user_id?: string
           slug?: string
           display_name?: string | null
-          uid_hex?: string | null
+          password_hash?: string
           latest_audio_id?: string | null
-          last_ctr?: number | null
-          last_ctr_at?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       audios: {
         Row: {
@@ -75,32 +67,7 @@ export interface Database {
           size_bytes?: number | null
           created_at?: string
         }
-      }
-      tap_events: {
-        Row: {
-          id: number
-          tag_id: string
-          uid_hex: string
-          ctr: number
-          ip_hash: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: number
-          tag_id: string
-          uid_hex: string
-          ctr: number
-          ip_hash?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: number
-          tag_id?: string
-          uid_hex?: string
-          ctr?: number
-          ip_hash?: string | null
-          created_at?: string
-        }
+        Relationships: []
       }
     }
     Views: {

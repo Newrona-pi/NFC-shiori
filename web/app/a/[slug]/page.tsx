@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { ListenerView } from './listener-view'
+import { createServiceClient } from '@/lib/supabase/server'
 
 // For Public Access Mode (No SDM / No Cookie required)
 
@@ -9,15 +10,11 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
     // Fetch Tag & Audios (Service Role)
     // We use service role because 'audios' table might be protected by RLS (only owners can see).
     // But here we want public access for listeners.
-    const { createClient } = require('@supabase/supabase-js')
-    const serviceClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const serviceClient = createServiceClient()
 
     const { data: tag } = await serviceClient
         .from('tags')
-        .select('id, display_name, slug, current_audio_id')
+        .select('id, display_name, slug, latest_audio_id')
         .eq('slug', slug)
         .single()
 
@@ -37,7 +34,7 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
         <ListenerView
             tag={tag}
             audios={audios || []}
-            latestAudioId={tag.current_audio_id || (audios && audios[0]?.id) || null}
+            latestAudioId={tag.latest_audio_id || (audios && audios[0]?.id) || null}
         />
     )
 }
