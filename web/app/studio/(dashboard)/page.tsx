@@ -13,7 +13,7 @@ export default async function StudioDashboardPage() {
 
   const { data: tag } = await supabase
     .from('tags')
-    .select('*')
+    .select('id, slug, display_name, password_hash, created_at')
     .eq('slug', session.slug)
     .single()
 
@@ -25,6 +25,7 @@ export default async function StudioDashboardPage() {
     .eq('tag_id', tag.id)
     .order('created_at', { ascending: false })
 
+  const latestAudioId = audios?.[0]?.id || null
   const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000'
   const listenerUrl = `${baseUrl}/a/${tag.slug}`
 
@@ -96,7 +97,7 @@ export default async function StudioDashboardPage() {
                 className="kawaii-card p-4 bg-white/60 flex items-center justify-between"
               >
                 <div className="flex items-center min-w-0 flex-1 mr-4">
-                  <div className={`p-2 rounded-xl mr-3 shrink-0 ${tag.latest_audio_id === audio.id ? 'bg-gradient-to-br from-pink-300 to-purple-300 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}>
+                  <div className={`p-2 rounded-xl mr-3 shrink-0 ${latestAudioId === audio.id ? 'bg-gradient-to-br from-pink-300 to-purple-300 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}>
                     <Music className="w-5 h-5" />
                   </div>
                   <div className="truncate">
@@ -113,7 +114,7 @@ export default async function StudioDashboardPage() {
                     </div>
                   </div>
                 </div>
-                {tag.latest_audio_id === audio.id && (
+                {latestAudioId === audio.id && (
                   <span className="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-1 rounded-full border border-green-200 flex items-center shrink-0">
                     <span className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1 animate-pulse"></span>
                     公開中

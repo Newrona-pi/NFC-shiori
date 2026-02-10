@@ -15,7 +15,6 @@ export interface Database {
           slug: string
           display_name: string | null
           password_hash: string
-          latest_audio_id: string | null
           created_at: string
         }
         Insert: {
@@ -23,7 +22,6 @@ export interface Database {
           slug: string
           display_name?: string | null
           password_hash: string
-          latest_audio_id?: string | null
           created_at?: string
         }
         Update: {
@@ -31,7 +29,6 @@ export interface Database {
           slug?: string
           display_name?: string | null
           password_hash?: string
-          latest_audio_id?: string | null
           created_at?: string
         }
         Relationships: []

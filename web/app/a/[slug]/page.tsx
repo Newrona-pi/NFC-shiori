@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { ListenerView } from './listener-view'
 import { createServiceClient } from '@/lib/supabase/server'
 
-// キャッシュ無効化 — 常に最新のDBデータを取得
 export const dynamic = 'force-dynamic'
 
 export default async function ListenerPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -12,7 +11,7 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
 
     const { data: tag, error } = await serviceClient
         .from('tags')
-        .select('id, display_name, slug, latest_audio_id')
+        .select('id, display_name, slug')
         .eq('slug', slug)
         .single()
 
@@ -34,7 +33,7 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
         <ListenerView
             tag={tag}
             audios={audios || []}
-            latestAudioId={tag.latest_audio_id || (audios && audios[0]?.id) || null}
+            latestAudioId={audios?.[0]?.id || null}
         />
     )
 }
