@@ -93,6 +93,8 @@ export function AudioPlayer({ audioId, autoPlay, title }: { audioId: string, aut
                 <audio
                     ref={audioRef}
                     src={url}
+                    autoPlay={autoPlay}
+                    playsInline
                     onPlay={() => setPlaying(true)}
                     onPause={() => setPlaying(false)}
                     onEnded={() => { setPlaying(false); setProgress(0); }}
