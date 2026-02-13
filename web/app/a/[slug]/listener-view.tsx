@@ -22,7 +22,61 @@ function formatTime(seconds: number): string {
     return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-function Artwork({ playing }: { playing: boolean }) {
+function Artwork({ playing, artworkUrl }: { playing: boolean; artworkUrl?: string | null }) {
+    if (artworkUrl) {
+        // CD / Vinyl style artwork
+        return (
+            <div className="relative w-64 sm:w-72 md:w-80 aspect-square">
+                {/* Outer glow when playing */}
+                <div className={`absolute inset-0 -m-4 rounded-full blur-2xl transition-all duration-1000 ${playing ? 'opacity-40 scale-110' : 'opacity-0 scale-100'
+                    }`} style={{
+                        background: 'radial-gradient(circle, rgba(251,113,133,0.5) 0%, rgba(167,139,250,0.4) 50%, transparent 70%)'
+                    }} />
+
+                {/* CD Disc */}
+                <div className={`relative w-full h-full rounded-full overflow-hidden shadow-2xl shadow-black/30 transition-all duration-700 ${playing ? 'animate-cd-spin' : ''
+                    }`}
+                    style={{
+                        animationPlayState: playing ? 'running' : 'paused',
+                    }}>
+                    {/* Artwork image - fills entire disc */}
+                    <img
+                        src={artworkUrl}
+                        alt="Artwork"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+
+                    {/* CD surface sheen overlay */}
+                    <div className="absolute inset-0 rounded-full" style={{
+                        background: `
+                            radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 50%),
+                            radial-gradient(circle, transparent 28%, rgba(0,0,0,0.05) 29%, rgba(0,0,0,0.05) 30%, transparent 31%),
+                            radial-gradient(circle, transparent 45%, rgba(255,255,255,0.03) 46%, rgba(255,255,255,0.03) 47%, transparent 48%),
+                            radial-gradient(circle, transparent 60%, rgba(0,0,0,0.03) 61%, rgba(0,0,0,0.03) 62%, transparent 63%)
+                        `
+                    }} />
+
+                    {/* Center hole */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-[18%] h-[18%] rounded-full bg-[#f8f8fa] shadow-inner border-2 border-zinc-200/50" />
+                    </div>
+
+                    {/* Center ring detail */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-[22%] h-[22%] rounded-full border border-black/10" />
+                    </div>
+                </div>
+
+                {/* Reflection highlight when playing */}
+                <div className={`absolute inset-0 rounded-full pointer-events-none transition-opacity duration-1000 ${playing ? 'opacity-100' : 'opacity-0'
+                    }`} style={{
+                        background: 'conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.08) 10%, transparent 20%, transparent 100%)',
+                    }} />
+            </div>
+        )
+    }
+
+    // Default: animated gradient blobs (no artwork)
     return (
         <div className="relative w-64 sm:w-72 md:w-80 aspect-square rounded-3xl overflow-hidden shadow-2xl shadow-black/20">
             {/* Base */}
@@ -54,7 +108,7 @@ function Artwork({ playing }: { playing: boolean }) {
     )
 }
 
-export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag; audios: Audio[]; latestAudioId: string | null }) {
+export function ListenerView({ tag, audios, latestAudioId, artworkUrl }: { tag: Tag; audios: Audio[]; latestAudioId: string | null; artworkUrl?: string | null }) {
     const [currentIndex, setCurrentIndex] = useState(() => {
         if (!latestAudioId) return 0
         const idx = audios.findIndex(a => a.id === latestAudioId)
@@ -111,7 +165,7 @@ export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag; audios:
     // Autoplay when URL loads
     useEffect(() => {
         if (url && audioRef.current) {
-            audioRef.current.play().catch(() => {})
+            audioRef.current.play().catch(() => { })
         }
     }, [url])
 
@@ -241,7 +295,7 @@ export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag; audios:
 
                 {/* Artwork */}
                 <div className="mb-10">
-                    <Artwork playing={playing} />
+                    <Artwork playing={playing} artworkUrl={artworkUrl} />
                 </div>
 
                 {/* Track Info */}
@@ -346,9 +400,8 @@ export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag; audios:
                                 <button
                                     key={audio.id}
                                     onClick={() => selectTrack(index)}
-                                    className={`w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-colors ${
-                                        isActive ? 'bg-black/[0.04]' : 'hover:bg-black/[0.03]'
-                                    }`}
+                                    className={`w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-colors ${isActive ? 'bg-black/[0.04]' : 'hover:bg-black/[0.03]'
+                                        }`}
                                 >
                                     {/* Track number / playing indicator */}
                                     <div className="w-7 flex-shrink-0 text-center">

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getStudioSession } from '@/lib/auth/session'
 import { createServiceClient } from '@/lib/supabase/server'
 import { FileUploader } from './file-uploader'
+import { ArtworkUploader } from './artwork-uploader'
 import { updateDisplayName } from './actions'
 import { DeleteAudioButton } from './delete-audio-button'
 import { SubmitButton } from '@/components/submit-button'
@@ -15,11 +16,20 @@ export default async function StudioDashboardPage() {
 
   const { data: tag } = await supabase
     .from('tags')
-    .select('id, slug, display_name, password_hash, created_at')
+    .select('id, slug, display_name, password_hash, artwork_path, created_at')
     .eq('slug', session.slug)
     .single()
 
   if (!tag) redirect('/studio/login')
+
+  // Get artwork signed URL if artwork exists
+  let artworkUrl: string | null = null
+  if (tag.artwork_path) {
+    const { data: signedData } = await supabase.storage
+      .from('audios')
+      .createSignedUrl(tag.artwork_path, 60 * 60)
+    artworkUrl = signedData?.signedUrl || null
+  }
 
   const { data: audios } = await supabase
     .from('audios')
@@ -55,10 +65,13 @@ export default async function StudioDashboardPage() {
         </div>
       </div>
 
-      {/* Row 2: Upload */}
+      {/* Row 2: Artwork */}
+      <ArtworkUploader tagId={tag.id} currentArtworkUrl={artworkUrl} />
+
+      {/* Row 3: Upload */}
       <FileUploader tagId={tag.id} />
 
-      {/* Row 3: Audio list */}
+      {/* Row 4: Audio list */}
       <div>
         <div className="flex items-center justify-between px-1 mb-2">
           <span className="text-xs font-medium text-[var(--s-text-muted)] uppercase tracking-wider">
@@ -78,11 +91,10 @@ export default async function StudioDashboardPage() {
                 key={audio.id}
                 className="flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--s-surface-hover)] transition-colors"
               >
-                <div className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${
-                  latestAudioId === audio.id
-                    ? 'bg-[var(--s-accent)]/15 text-[var(--s-accent)]'
-                    : 'bg-[var(--s-surface-hover)] text-[var(--s-text-muted)]'
-                }`}>
+                <div className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${latestAudioId === audio.id
+                  ? 'bg-[var(--s-accent)]/15 text-[var(--s-accent)]'
+                  : 'bg-[var(--s-surface-hover)] text-[var(--s-text-muted)]'
+                  }`}>
                   <Music className="w-3.5 h-3.5" />
                 </div>
 

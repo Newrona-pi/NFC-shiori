@@ -16,6 +16,7 @@ export interface Database {
           display_name: string | null
           password_hash: string
           latest_audio_id: string | null
+          artwork_path: string | null
           created_at: string
         }
         Insert: {
@@ -24,6 +25,7 @@ export interface Database {
           display_name?: string | null
           password_hash: string
           latest_audio_id?: string | null
+          artwork_path?: string | null
           created_at?: string
         }
         Update: {
@@ -32,6 +34,7 @@ export interface Database {
           display_name?: string | null
           password_hash?: string
           latest_audio_id?: string | null
+          artwork_path?: string | null
           created_at?: string
         }
         Relationships: []

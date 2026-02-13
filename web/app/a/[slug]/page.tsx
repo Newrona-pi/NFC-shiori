@@ -11,7 +11,7 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
 
     const { data: tag, error } = await serviceClient
         .from('tags')
-        .select('id, display_name, slug')
+        .select('id, display_name, slug, artwork_path')
         .eq('slug', slug)
         .single()
 
@@ -29,11 +29,21 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
         .eq('tag_id', tag.id)
         .order('created_at', { ascending: false })
 
+    // Get artwork signed URL
+    let artworkUrl: string | null = null
+    if (tag.artwork_path) {
+        const { data: signedData } = await serviceClient.storage
+            .from('audios')
+            .createSignedUrl(tag.artwork_path, 60 * 60)
+        artworkUrl = signedData?.signedUrl || null
+    }
+
     return (
         <ListenerView
             tag={tag}
             audios={audios || []}
             latestAudioId={audios?.[0]?.id || null}
+            artworkUrl={artworkUrl}
         />
     )
 }
