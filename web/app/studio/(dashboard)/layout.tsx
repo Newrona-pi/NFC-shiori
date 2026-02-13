@@ -28,7 +28,7 @@ export default async function StudioLayout({
     <div className="studio-shell s-noise">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b border-[var(--s-border)] bg-[var(--s-bg)]/80 backdrop-blur-md">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 h-12 flex items-center justify-between">
           {/* Logo */}
           <Link href="/studio" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 rounded-lg bg-[var(--s-accent)] flex items-center justify-center">
@@ -63,7 +63,7 @@ export default async function StudioLayout({
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <main className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-5">
         <div className="s-animate-in">
           {children}
         </div>
