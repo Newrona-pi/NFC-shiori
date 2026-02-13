@@ -5,8 +5,7 @@ import { Sparkles } from 'lucide-react'
 
 const ERROR_MESSAGES: Record<string, string> = {
   empty: 'パスワードを入力してください',
-  mismatch: 'パスワードが一致しません',
-  create_failed: 'チャンネルの作成に失敗しました',
+  invalid: '無効なパスワードです',
 }
 
 export default async function LoginPage({
@@ -26,7 +25,7 @@ export default async function LoginPage({
           </div>
           <h1 className="text-3xl font-extrabold text-[#5d5d8d]">NFC Studio</h1>
           <p className="text-sm text-slate-500">
-            パスワードを入力してログイン・新規作成
+            配布されたパスワードを入力してログイン
           </p>
         </div>
 
@@ -55,7 +54,7 @@ export default async function LoginPage({
             className="w-full bg-gradient-to-r from-pink-300 to-purple-300 text-white font-bold py-3.5 px-8 rounded-full shadow-lg hover:shadow-pink-200 hover:scale-105 active:scale-95 transition-all duration-300 kawaii-btn"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            ログイン / 新規作成
+            ログイン
           </Button>
         </form>
       </div>

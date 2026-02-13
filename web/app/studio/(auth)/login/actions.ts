@@ -16,29 +16,14 @@ export async function loginAction(formData: FormData): Promise<void> {
 
   const supabase = createServiceClient()
 
-  // Check if channel exists
   const { data: existing } = await supabase
     .from('tags')
     .select('id, password_hash')
     .eq('slug', slug)
     .single()
 
-  if (existing) {
-    // Verify full hash (collision prevention)
-    if (existing.password_hash !== fullHash) {
-      redirect('/studio/login?error=mismatch')
-    }
-  } else {
-    // Create new channel
-    const { error } = await supabase.from('tags').insert({
-      slug,
-      password_hash: fullHash,
-      display_name: 'マイチャンネル',
-    })
-    if (error) {
-      console.error('Create channel error:', error)
-      redirect('/studio/login?error=create_failed')
-    }
+  if (!existing || existing.password_hash !== fullHash) {
+    redirect('/studio/login?error=invalid')
   }
 
   await createStudioSession(slug)
