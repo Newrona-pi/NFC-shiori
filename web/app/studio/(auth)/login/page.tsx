@@ -1,7 +1,5 @@
 import { loginAction } from './actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Sparkles } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 
 const ERROR_MESSAGES: Record<string, string> = {
   empty: 'パスワードを入力してください',
@@ -17,45 +15,48 @@ export default async function LoginPage({
   const errorMessage = typeof error === 'string' ? ERROR_MESSAGES[error] : null
 
   return (
-    <div className="flex min-h-screen items-center justify-center font-mplus">
-      <div className="w-full max-w-md space-y-8 kawaii-card p-8 bg-white/70 backdrop-blur-xl">
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center p-3 bg-gradient-to-tr from-pink-400 to-purple-500 rounded-full shadow-lg">
-            <Sparkles className="w-6 h-6 text-white" />
+    <div className="studio-shell s-noise flex items-center justify-center min-h-screen px-4">
+      <div className="relative z-10 w-full max-w-sm s-animate-in">
+        {/* Brand */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--s-surface)] border border-[var(--s-border)] mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--s-accent)]">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" x2="12" y1="19" y2="22" />
+            </svg>
           </div>
-          <h1 className="text-3xl font-extrabold text-[#5d5d8d]">NFC Studio</h1>
-          <p className="text-sm text-slate-500">
-            配布されたパスワードを入力してログイン
+          <h1 className="text-xl font-semibold tracking-tight">NFC Studio</h1>
+          <p className="text-sm text-[var(--s-text-muted)] mt-1.5">
+            配布されたパスワードでログイン
           </p>
         </div>
 
-        <form action={loginAction} className="mt-8 space-y-6">
+        {/* Form */}
+        <form action={loginAction} className="space-y-4">
           <div>
-            <label htmlFor="password" className="block text-sm font-bold text-slate-500 ml-1 mb-2">
+            <label htmlFor="password" className="block text-xs font-medium text-[var(--s-text-muted)] mb-2 ml-0.5">
               パスワード
             </label>
-            <Input
+            <input
               id="password"
               name="password"
               type="password"
               autoComplete="current-password"
               required
-              placeholder="パスワードを入力..."
-              className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-slate-700 placeholder-slate-300 focus:outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-100 transition-all"
+              placeholder="パスワードを入力"
+              className="s-input w-full"
             />
           </div>
 
           {errorMessage && (
-            <p className="text-sm text-red-500 font-bold text-center">{errorMessage}</p>
+            <p className="text-sm text-[var(--s-danger)] text-center font-medium">{errorMessage}</p>
           )}
 
-          <Button
-            type="submit"
-            className="w-full bg-gradient-to-r from-pink-300 to-purple-300 text-white font-bold py-3.5 px-8 rounded-full shadow-lg hover:shadow-pink-200 hover:scale-105 active:scale-95 transition-all duration-300 kawaii-btn"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
+          <button type="submit" className="s-btn s-btn-primary w-full py-2.5 text-sm">
+            <LogIn className="w-4 h-4" />
             ログイン
-          </Button>
+          </button>
         </form>
       </div>
     </div>

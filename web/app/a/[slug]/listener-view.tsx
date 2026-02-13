@@ -45,7 +45,7 @@ export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag, audios:
     const currentAudio = audios.find(a => a.id === currentId)
 
     return (
-        <div className="min-h-screen bg-transparent text-slate-700 font-sans overflow-hidden relative selection:bg-pink-300 selection:text-white">
+        <div className="listener-shell min-h-screen text-slate-700 font-sans overflow-hidden relative selection:bg-pink-300 selection:text-white">
 
             {/* Dreamy Background Blobs */}
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">

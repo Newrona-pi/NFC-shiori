@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { getStudioSession } from '@/lib/auth/session'
 import { createServiceClient } from '@/lib/supabase/server'
 import { logoutAction } from '@/app/studio/(auth)/login/actions'
-import { Sparkles, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 
 export default async function StudioLayout({
   children,
@@ -25,47 +25,46 @@ export default async function StudioLayout({
   const displayName = tag?.display_name || session.slug
 
   return (
-    <div className="min-h-screen text-white relative font-mplus">
-      {/* Kawaii Floating Navbar */}
-      <nav className="fixed top-4 left-4 right-4 z-50">
-        <div className="mx-auto max-w-7xl">
-          <div className="kawaii-card px-6 py-3 flex items-center justify-between shadow-lg backdrop-blur-xl bg-white/10 border border-white/20 rounded-full">
-            {/* Logo Area */}
-            <Link href="/studio" className="group flex items-center space-x-2 text-xl font-bold text-white hover:text-pink-200 transition-colors">
-              <div className="bg-gradient-to-tr from-pink-400 to-purple-500 p-2 rounded-full shadow-md group-hover:scale-110 transition-transform">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-mplus tracking-tight hidden sm:block">NFC Studio</span>
-            </Link>
-
-            {/* User Profile / Logout */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 px-3 py-1 bg-black/20 rounded-full border border-white/5">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-[10px] font-bold">
-                  {displayName[0]?.toUpperCase()}
-                </div>
-                <span className="text-xs text-white/70 max-w-[120px] truncate hidden sm:block">
-                  {displayName}
-                </span>
-              </div>
-
-              <form action={logoutAction}>
-                <button
-                  type="submit"
-                  className="p-2 rounded-full bg-white/5 hover:bg-pink-500/80 text-white/70 hover:text-white transition-all duration-300 hover:rotate-12"
-                  title="ログアウト"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </form>
+    <div className="studio-shell s-noise">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 border-b border-[var(--s-border)] bg-[var(--s-bg)]/80 backdrop-blur-md">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 h-14 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/studio" className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 rounded-lg bg-[var(--s-accent)] flex items-center justify-center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#09090b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" x2="12" y1="19" y2="22" />
+              </svg>
             </div>
+            <span className="text-sm font-semibold tracking-tight text-[var(--s-text)] group-hover:text-[var(--s-accent)] transition-colors">
+              NFC Studio
+            </span>
+          </Link>
+
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-[var(--s-text-muted)] max-w-[140px] truncate hidden sm:block">
+              {displayName}
+            </span>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="s-btn s-btn-ghost py-1.5 px-3 text-xs"
+                title="ログアウト"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">ログアウト</span>
+              </button>
+            </form>
           </div>
         </div>
       </nav>
 
-      {/* Main Content with top padding for fixed nav */}
-      <main className="pt-28 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Main Content */}
+      <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        <div className="s-animate-in">
           {children}
         </div>
       </main>

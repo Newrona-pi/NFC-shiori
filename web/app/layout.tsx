@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { M_PLUS_Rounded_1c, Varela_Round } from 'next/font/google'
+import { M_PLUS_Rounded_1c, Sora, Zen_Kaku_Gothic_New } from 'next/font/google'
 import './globals.css'
 
 const mplus = M_PLUS_Rounded_1c({
@@ -9,15 +9,21 @@ const mplus = M_PLUS_Rounded_1c({
     display: 'swap',
 })
 
-const varela = Varela_Round({
-    weight: ['400'],
+const sora = Sora({
     subsets: ['latin'],
-    variable: '--font-varela',
+    variable: '--font-sora',
+    display: 'swap',
+})
+
+const zenKaku = Zen_Kaku_Gothic_New({
+    weight: ['400', '500', '700'],
+    subsets: ['latin'],
+    variable: '--font-zen',
     display: 'swap',
 })
 
 export const metadata: Metadata = {
-    title: 'NFC Shiori ✨ | 特別な声をあなたに',
+    title: 'NFC Shiori',
     description: 'Listen to exclusive moments via NFC.',
 }
 
@@ -27,8 +33,8 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="ja" className={`${mplus.variable} ${varela.variable}`}>
-            <body className="font-sans antialiased bg-[#1a1625] text-white selection:bg-pink-400 selection:text-white">
+        <html lang="ja" className={`${mplus.variable} ${sora.variable} ${zenKaku.variable}`}>
+            <body className="font-sans antialiased">
                 {children}
             </body>
         </html>
