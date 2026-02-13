@@ -88,6 +88,14 @@ export function FileUploader({ tagId }: { tagId: string }) {
 
   return (
     <form onSubmit={handleUpload} className="s-card p-3">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="audio/*"
+        disabled={uploading}
+        onChange={handleFileChange}
+        className="hidden"
+      />
       <div className="flex items-center gap-2">
         {/* File picker / selected file */}
         {fileName ? (
@@ -99,19 +107,14 @@ export function FileUploader({ tagId }: { tagId: string }) {
             </button>
           </div>
         ) : (
-          <label className="flex items-center gap-2 flex-1 min-w-0 border border-dashed border-[var(--s-border)] rounded-lg px-3 py-2 cursor-pointer hover:border-[var(--s-text-muted)] transition-colors">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 flex-1 min-w-0 border border-dashed border-[var(--s-border)] rounded-lg px-3 py-2 cursor-pointer hover:border-[var(--s-text-muted)] transition-colors text-left"
+          >
             <Upload className="w-3.5 h-3.5 text-[var(--s-text-muted)] shrink-0" />
             <span className="text-sm text-[var(--s-text-muted)]">ファイルを選択</span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="audio/*"
-              required
-              disabled={uploading}
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </label>
+          </button>
         )}
 
         {/* Upload button */}

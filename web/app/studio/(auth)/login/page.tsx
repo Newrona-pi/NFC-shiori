@@ -1,4 +1,5 @@
 import { loginAction } from './actions'
+import { SubmitButton } from '@/components/submit-button'
 import { LogIn } from 'lucide-react'
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -53,10 +54,10 @@ export default async function LoginPage({
             <p className="text-sm text-[var(--s-danger)] text-center font-medium">{errorMessage}</p>
           )}
 
-          <button type="submit" className="s-btn s-btn-primary w-full py-2.5 text-sm">
+          <SubmitButton pendingText="ログイン中..." className="s-btn s-btn-primary w-full py-2.5 text-sm">
             <LogIn className="w-4 h-4" />
             ログイン
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>

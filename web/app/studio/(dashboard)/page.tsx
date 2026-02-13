@@ -3,6 +3,8 @@ import { getStudioSession } from '@/lib/auth/session'
 import { createServiceClient } from '@/lib/supabase/server'
 import { FileUploader } from './file-uploader'
 import { updateDisplayName } from './actions'
+import { DeleteAudioButton } from './delete-audio-button'
+import { SubmitButton } from '@/components/submit-button'
 import { Clock, Music, Link as LinkIcon } from 'lucide-react'
 
 export default async function StudioDashboardPage() {
@@ -41,9 +43,9 @@ export default async function StudioDashboardPage() {
             placeholder="チャンネル名"
             className="s-input flex-1 text-sm min-w-0"
           />
-          <button type="submit" className="s-btn s-btn-primary text-xs shrink-0">
+          <SubmitButton pendingText="保存中..." className="s-btn s-btn-primary text-xs shrink-0">
             保存
-          </button>
+          </SubmitButton>
         </form>
         <div className="flex items-center gap-2 sm:border-l sm:border-[var(--s-border)] sm:pl-3 min-w-0">
           <LinkIcon className="w-3.5 h-3.5 text-[var(--s-text-muted)] shrink-0" />
@@ -97,14 +99,14 @@ export default async function StudioDashboardPage() {
                   {new Date(audio.created_at).toLocaleDateString('ja-JP')}
                 </span>
 
-                {latestAudioId === audio.id ? (
+                {latestAudioId === audio.id && (
                   <span className="text-[10px] font-medium bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1 shrink-0">
                     <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
                     公開中
                   </span>
-                ) : (
-                  <span className="w-[52px] shrink-0" />
                 )}
+
+                <DeleteAudioButton audioId={audio.id} />
               </div>
             ))}
           </div>
