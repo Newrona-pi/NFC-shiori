@@ -58,7 +58,7 @@ function Artwork({ playing, artworkUrl }: { playing: boolean; artworkUrl?: strin
 
                     {/* Center hole - semi-transparent so artwork shows through */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-[18%] h-[18%] rounded-full bg-white/30 backdrop-blur-sm shadow-inner border border-white/40" />
+                        <div className="w-[18%] h-[18%] rounded-full bg-white/20 shadow-inner border border-white/30" />
                     </div>
 
                     {/* Center ring detail */}
