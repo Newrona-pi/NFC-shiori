@@ -14,7 +14,7 @@ import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 
 const TOTAL = 100
-const PASSWORD_LENGTH = 10
+const PASSWORD_LENGTH = 12
 // 紛らわしい文字 (0/O, 1/l/I) を除外
 const CHARSET = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 

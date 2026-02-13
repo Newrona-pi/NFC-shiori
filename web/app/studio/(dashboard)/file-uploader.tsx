@@ -9,6 +9,7 @@ export function FileUploader({ tagId }: { tagId: string }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fileName, setFileName] = useState<string | null>(null)
+  const [title, setTitle] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange() {
@@ -20,6 +21,7 @@ export function FileUploader({ tagId }: { tagId: string }) {
   function clearFile() {
     if (fileInputRef.current) fileInputRef.current.value = ''
     setFileName(null)
+    setTitle('')
     setError(null)
   }
 
@@ -27,7 +29,7 @@ export function FileUploader({ tagId }: { tagId: string }) {
     e.preventDefault()
     setError(null)
     const file = fileInputRef.current?.files?.[0]
-    if (!file) return
+    if (!file || !title.trim()) return
 
     setUploading(true)
     try {
@@ -64,7 +66,7 @@ export function FileUploader({ tagId }: { tagId: string }) {
         body: JSON.stringify({
           tagId,
           storagePath: path,
-          title: file.name,
+          title: title.trim(),
           mimeType: file.type,
           sizeBytes: file.size,
           durationMs,
@@ -78,6 +80,7 @@ export function FileUploader({ tagId }: { tagId: string }) {
 
       router.refresh()
       clearFile()
+      setTitle('')
     } catch (err: any) {
       console.error(err)
       setError(err.message || 'アップロードに失敗しました')
@@ -97,6 +100,16 @@ export function FileUploader({ tagId }: { tagId: string }) {
         className="hidden"
       />
       <div className="flex items-center gap-2">
+        {/* Title input */}
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="表示名"
+          disabled={uploading}
+          className="s-input text-sm w-32 sm:w-40 shrink-0"
+        />
+
         {/* File picker / selected file */}
         {fileName ? (
           <div className="flex items-center gap-2 flex-1 min-w-0 bg-[var(--s-bg)] border border-[var(--s-border)] rounded-lg px-3 py-2">
@@ -120,7 +133,7 @@ export function FileUploader({ tagId }: { tagId: string }) {
         {/* Upload button */}
         <button
           type="submit"
-          disabled={uploading || !fileName}
+          disabled={uploading || !fileName || !title.trim()}
           className="s-btn s-btn-primary text-xs shrink-0"
         >
           {uploading ? (

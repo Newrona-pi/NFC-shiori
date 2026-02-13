@@ -5,7 +5,8 @@
   "permissions": {
     "allow": [
       "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npx next build:*)"
     ]
   }
 }
