@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await serviceClient
         .storage
-        .from('audios')
+        .from('artworks')
         .createSignedUrl(tag.artwork_path, 60 * 60) // 1 hour validity
 
     if (error) {

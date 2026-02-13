@@ -36,17 +36,17 @@ export async function POST(req: NextRequest) {
 
     // Delete old artwork if exists
     if (tag.artwork_path) {
-        await supabase.storage.from('audios').remove([tag.artwork_path])
+        await supabase.storage.from('artworks').remove([tag.artwork_path])
     }
 
     // Upload new artwork
     const ext = file.name.split('.').pop() || 'jpg'
-    const path = `artworks/${tagId}/${crypto.randomUUID()}.${ext}`
+    const path = `${tagId}/${crypto.randomUUID()}.${ext}`
     const arrayBuffer = await file.arrayBuffer()
     const buffer = new Uint8Array(arrayBuffer)
 
     const { error: uploadError } = await supabase.storage
-        .from('audios')
+        .from('artworks')
         .upload(path, buffer, {
             contentType: file.type,
             upsert: false,
@@ -64,13 +64,13 @@ export async function POST(req: NextRequest) {
 
     if (updateError) {
         // Clean up uploaded file
-        await supabase.storage.from('audios').remove([path])
+        await supabase.storage.from('artworks').remove([path])
         return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
 
     // Return signed URL for preview
     const { data: signedData } = await supabase.storage
-        .from('audios')
+        .from('artworks')
         .createSignedUrl(path, 60 * 60)
 
     return NextResponse.json({

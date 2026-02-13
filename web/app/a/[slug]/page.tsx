@@ -33,7 +33,7 @@ export default async function ListenerPage({ params }: { params: Promise<{ slug:
     let artworkUrl: string | null = null
     if (tag.artwork_path) {
         const { data: signedData } = await serviceClient.storage
-            .from('audios')
+            .from('artworks')
             .createSignedUrl(tag.artwork_path, 60 * 60)
         artworkUrl = signedData?.signedUrl || null
     }
