@@ -6,8 +6,8 @@ body {
 }
 
 .listener-modern {
-    background: #0a0a0a;
-    color: #ffffff;
+    background: #f8f8fa;
+    color: #1a1a2e;
     font-family: var(--font-sora), var(--font-mplus), -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -54,7 +54,7 @@ body {
 /* Track list scrollbar */
 .tracklist-scroll::-webkit-scrollbar { width: 3px; }
 .tracklist-scroll::-webkit-scrollbar-track { background: transparent; }
-.tracklist-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+.tracklist-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 3px; }
 
 /* Legacy (kept for audio-player.tsx compat) */
 .kawaii-btn {
