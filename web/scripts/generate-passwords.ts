@@ -76,7 +76,7 @@ async function main() {
     csvLines.push(`${r.number},${r.password},${r.slug}`)
   }
 
-  const csvPath = resolve(import.meta.dirname, '..', 'passwords.csv')
+  const csvPath = resolve(process.cwd(), 'passwords.csv')
   writeFileSync(csvPath, csvLines.join('\n') + '\n', 'utf-8')
 
   console.log(`✓ ${TOTAL} 件のパスワードを生成し、DB に挿入しました。`)
