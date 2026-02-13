@@ -1,23 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { AudioPlayer } from '@/components/audio-player'
-import { Clock, Calendar, Heart, Music, Sparkles } from 'lucide-react'
-
-// Cute floating shape (adjusted for light theme)
-const Blob = ({ color, top, left, delay, size }: any) => (
-    <div
-        className={`absolute rounded-full filter blur-[60px] opacity-30 animate-float-slow`}
-        style={{
-            backgroundColor: color,
-            top: top,
-            left: left,
-            width: size,
-            height: size,
-            animationDelay: delay
-        }}
-    />
-)
+import { useState, useRef, useEffect } from 'react'
+import { Play, Pause, SkipBack, SkipForward, Music, Loader2 } from 'lucide-react'
 
 interface Audio {
     id: string
@@ -31,119 +15,377 @@ interface Tag {
     slug: string
 }
 
-export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag, audios: Audio[], latestAudioId: string | null }) {
-    const [currentId, setCurrentId] = useState<string | null>(latestAudioId)
-    const [autoPlay, setAutoPlay] = useState(true)
+function formatTime(seconds: number): string {
+    if (!seconds || !isFinite(seconds)) return '0:00'
+    const m = Math.floor(seconds / 60)
+    const s = Math.floor(seconds % 60)
+    return `${m}:${s.toString().padStart(2, '0')}`
+}
 
-    const handlePlay = (id: string) => {
-        if (currentId !== id) {
-            setCurrentId(id)
-            setAutoPlay(true)
+function Artwork({ playing }: { playing: boolean }) {
+    return (
+        <div className="relative w-64 sm:w-72 md:w-80 aspect-square rounded-3xl overflow-hidden shadow-2xl shadow-black/60">
+            {/* Base */}
+            <div className="absolute inset-0 bg-zinc-900" />
+
+            {/* Animated gradient blobs */}
+            <div className={`absolute -top-1/4 -left-1/4 w-3/4 h-3/4 rounded-full bg-rose-500/70 blur-3xl transition-opacity duration-1000 ${playing ? 'animate-blob-1 opacity-70' : 'opacity-40'}`} />
+            <div className={`absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 rounded-full bg-purple-600/70 blur-3xl transition-opacity duration-1000 ${playing ? 'animate-blob-2 opacity-70' : 'opacity-40'}`} />
+            <div className={`absolute top-1/4 -right-1/4 w-2/3 h-2/3 rounded-full bg-cyan-500/50 blur-3xl transition-opacity duration-1000 ${playing ? 'animate-blob-3 opacity-50' : 'opacity-20'}`} />
+            <div className={`absolute -bottom-1/4 left-1/4 w-1/2 h-1/2 rounded-full bg-amber-400/40 blur-3xl transition-opacity duration-1000 ${playing ? 'animate-blob-4 opacity-40' : 'opacity-20'}`} />
+
+            {/* Center visual */}
+            <div className="absolute inset-0 flex items-center justify-center">
+                {playing ? (
+                    <div className="flex items-end gap-[3px] h-8">
+                        {[0, 1, 2, 3, 4].map(i => (
+                            <div
+                                key={i}
+                                className="w-[5px] bg-white/90 rounded-full animate-eq"
+                                style={{ animationDelay: `${i * 0.15}s` }}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <Music className="w-12 h-12 text-white/20" />
+                )}
+            </div>
+        </div>
+    )
+}
+
+export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag; audios: Audio[]; latestAudioId: string | null }) {
+    const [currentIndex, setCurrentIndex] = useState(() => {
+        if (!latestAudioId) return 0
+        const idx = audios.findIndex(a => a.id === latestAudioId)
+        return idx >= 0 ? idx : 0
+    })
+    const [playing, setPlaying] = useState(false)
+    const [progress, setProgress] = useState(0)
+    const [currentTime, setCurrentTime] = useState(0)
+    const [duration, setDuration] = useState(0)
+    const [url, setUrl] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [seeking, setSeeking] = useState(false)
+    const audioRef = useRef<HTMLAudioElement>(null)
+    const progressRef = useRef<HTMLDivElement>(null)
+
+    const currentAudio = audios[currentIndex] ?? null
+    const hasNext = currentIndex < audios.length - 1
+    const hasPrev = currentIndex > 0
+
+    // Fetch signed URL when track changes
+    useEffect(() => {
+        if (!currentAudio) return
+        let mounted = true
+        setUrl(null)
+        setProgress(0)
+        setCurrentTime(0)
+        setDuration(0)
+        setPlaying(false)
+        setError(null)
+
+        async function fetchUrl() {
+            setLoading(true)
+            try {
+                const res = await fetch('/api/public/audio/signed-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ audioId: currentAudio.id })
+                })
+                if (!res.ok) throw new Error('Failed')
+                const data = await res.json()
+                if (mounted) setUrl(data.signedUrl)
+            } catch {
+                if (mounted) setError('音声を読み込めませんでした')
+            } finally {
+                if (mounted) setLoading(false)
+            }
+        }
+
+        fetchUrl()
+        return () => { mounted = false }
+    }, [currentAudio])
+
+    // Autoplay when URL loads
+    useEffect(() => {
+        if (url && audioRef.current) {
+            audioRef.current.play().catch(() => {})
+        }
+    }, [url])
+
+    const togglePlay = () => {
+        if (!audioRef.current) return
+        playing ? audioRef.current.pause() : audioRef.current.play()
+    }
+
+    const skipNext = () => {
+        if (hasNext) setCurrentIndex(i => i + 1)
+    }
+
+    const skipPrev = () => {
+        if (audioRef.current && audioRef.current.currentTime > 3) {
+            audioRef.current.currentTime = 0
+        } else if (hasPrev) {
+            setCurrentIndex(i => i - 1)
+        } else if (audioRef.current) {
+            audioRef.current.currentTime = 0
         }
     }
 
-    const currentAudio = audios.find(a => a.id === currentId)
+    const handleTimeUpdate = () => {
+        if (!audioRef.current || seeking) return
+        const ct = audioRef.current.currentTime
+        const dur = audioRef.current.duration || 1
+        setCurrentTime(ct)
+        setDuration(dur)
+        setProgress((ct / dur) * 100)
+    }
+
+    const handleSeek = (clientX: number) => {
+        if (!progressRef.current || !audioRef.current) return
+        const rect = progressRef.current.getBoundingClientRect()
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+        const dur = audioRef.current.duration || 0
+        audioRef.current.currentTime = pct * dur
+        setProgress(pct * 100)
+        setCurrentTime(pct * dur)
+    }
+
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        setSeeking(true)
+        handleSeek(e.clientX)
+        e.currentTarget.setPointerCapture(e.pointerId)
+    }
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (seeking) handleSeek(e.clientX)
+    }
+
+    const handlePointerUp = () => {
+        setSeeking(false)
+    }
+
+    const handleEnded = () => {
+        if (hasNext) {
+            setCurrentIndex(i => i + 1)
+        } else {
+            setPlaying(false)
+            setProgress(0)
+            setCurrentTime(0)
+        }
+    }
+
+    const selectTrack = (index: number) => {
+        if (index === currentIndex) {
+            togglePlay()
+        } else {
+            setCurrentIndex(index)
+        }
+    }
+
+    // Empty state
+    if (audios.length === 0) {
+        return (
+            <div className="listener-modern min-h-screen flex flex-col items-center justify-center px-6">
+                <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                    <Music className="w-10 h-10 text-zinc-700" />
+                </div>
+                <p className="text-zinc-400 text-lg font-medium">まだメッセージがありません</p>
+                <p className="text-zinc-600 text-sm mt-2">音声メッセージが届くとここに表示されます</p>
+            </div>
+        )
+    }
 
     return (
-        <div className="listener-shell min-h-screen text-slate-700 font-sans overflow-hidden relative selection:bg-pink-300 selection:text-white">
+        <div className="listener-modern min-h-screen relative overflow-hidden select-none">
+            {/* Hidden audio element */}
+            {url && (
+                <audio
+                    ref={audioRef}
+                    src={url}
+                    playsInline
+                    onPlay={() => setPlaying(true)}
+                    onPause={() => setPlaying(false)}
+                    onEnded={handleEnded}
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={() => {
+                        if (audioRef.current) setDuration(audioRef.current.duration)
+                    }}
+                />
+            )}
 
-            {/* Dreamy Background Blobs */}
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                <Blob color="#ffd6e7" top="-10%" left="-10%" size="600px" delay="0s" />
-                <Blob color="#d4f0f0" top="40%" right="-20%" size="500px" delay="3s" />
-                <Blob color="#e6e6fa" bottom="-10%" left="20%" size="400px" delay="5s" />
-
-                {/* Subtle texture */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-multiply"></div>
+            {/* Background ambient glow */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div
+                    className={`absolute top-[15%] left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full blur-[160px] transition-opacity duration-1000 ${playing ? 'opacity-25' : 'opacity-10'}`}
+                    style={{
+                        background: 'radial-gradient(circle, rgba(250,45,106,0.5) 0%, rgba(168,85,247,0.3) 40%, transparent 70%)'
+                    }}
+                />
             </div>
 
-            <div className="relative z-10 max-w-lg mx-auto px-6 py-12 flex flex-col items-center min-h-screen">
+            {/* Main content */}
+            <div className="relative z-10 max-w-md mx-auto px-6 pt-10 pb-8 flex flex-col items-center min-h-screen">
 
-                {/* Brand / Header */}
-                <div className="mb-10 text-center transform transition-transform duration-500 hover:scale-105">
-                    <div className="inline-flex items-center justify-center bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/50 mb-4 shadow-sm animate-float-slow text-pink-400">
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        <span className="text-xs font-bold tracking-widest uppercase">Secret Message</span>
-                    </div>
-
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 drop-shadow-sm font-mplus leading-tight pb-2">
-                        {tag.display_name}
-                    </h1>
+                {/* Header */}
+                <div className="w-full text-center mb-8">
+                    <p className="text-[11px] text-zinc-500 uppercase tracking-[0.2em] font-medium">
+                        Playing From
+                    </p>
+                    <p className="text-sm text-zinc-300 font-semibold mt-1">
+                        {tag.display_name || 'NFC Shiori'}
+                    </p>
                 </div>
 
-                {/* Main Player Area */}
-                <div className="w-full mb-12 perspective-1000">
-                    {currentId ? (
-                        <div className="transform transition-all duration-500 hover:rotate-1">
-                            <AudioPlayer
-                                audioId={currentId}
-                                autoPlay={autoPlay}
-                                title={currentAudio?.title ?? undefined}
+                {/* Artwork */}
+                <div className="mb-10">
+                    <Artwork playing={playing} />
+                </div>
+
+                {/* Track Info */}
+                <div className="w-full text-center mb-6 px-4">
+                    <h1 className="text-xl font-bold text-white truncate">
+                        {currentAudio?.title || 'タイトルなし'}
+                    </h1>
+                    <p className="text-sm text-zinc-500 mt-1">
+                        {currentAudio ? new Date(currentAudio.created_at).toLocaleDateString('ja-JP', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                        }) : ''}
+                    </p>
+                </div>
+
+                {/* Error */}
+                {error && (
+                    <div className="w-full mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+                        {error}
+                    </div>
+                )}
+
+                {/* Progress / Seek Bar */}
+                <div className="w-full px-2 mb-6">
+                    <div
+                        ref={progressRef}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        className="relative w-full h-7 flex items-center cursor-pointer group touch-none"
+                    >
+                        <div className="absolute left-0 right-0 h-[3px] bg-white/[0.12] rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-white/90 rounded-full"
+                                style={{ width: `${progress}%`, transition: seeking ? 'none' : 'width 0.15s linear' }}
                             />
                         </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-64 w-full rounded-[40px] bg-white/40 border-2 border-dashed border-pink-200 text-pink-300 backdrop-blur-sm">
-                            <Music className="w-12 h-12 mb-4 opacity-50 animate-bounce" />
-                            <span className="font-mplus font-bold text-lg">まだメッセージがありません...</span>
-                        </div>
-                    )}
+                        {/* Knob */}
+                        <div
+                            className="absolute top-1/2 w-4 h-4 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                            style={{
+                                left: `${progress}%`,
+                                transform: 'translate(-50%, -50%)'
+                            }}
+                        />
+                    </div>
+                    <div className="flex justify-between text-[11px] text-zinc-500 tabular-nums mt-1">
+                        <span>{formatTime(currentTime)}</span>
+                        <span>{formatTime(duration)}</span>
+                    </div>
                 </div>
 
-                {/* Archive List (Memories) */}
-                <div className="w-full bg-white/40 backdrop-blur-md rounded-[32px] border border-white/60 p-6 shadow-lg shadow-purple-500/5">
-                    <div className="flex items-center justify-between mb-6 px-2">
-                        <div className="flex items-center space-x-2 text-purple-600">
-                            <Heart className="w-5 h-5 fill-current animate-pulse text-pink-400" />
-                            <h3 className="text-lg font-bold font-mplus">
-                                思い出の記録
-                            </h3>
-                        </div>
-                        <span className="text-xs font-bold bg-white text-pink-400 px-3 py-1 rounded-full shadow-sm border border-pink-100">
-                            {audios.length} 件
+                {/* Controls */}
+                <div className="flex items-center justify-center gap-10 mb-10">
+                    <button
+                        onClick={skipPrev}
+                        className="text-zinc-400 hover:text-white transition-colors"
+                    >
+                        <SkipBack className="w-7 h-7 fill-current" />
+                    </button>
+
+                    <button
+                        onClick={togglePlay}
+                        disabled={loading || !url}
+                        className="w-[72px] h-[72px] rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform disabled:opacity-30 disabled:hover:scale-100"
+                    >
+                        {loading ? (
+                            <Loader2 className="w-8 h-8 text-black animate-spin" />
+                        ) : playing ? (
+                            <Pause className="w-8 h-8 text-black fill-current" />
+                        ) : (
+                            <Play className="w-8 h-8 text-black fill-current ml-1" />
+                        )}
+                    </button>
+
+                    <button
+                        onClick={skipNext}
+                        disabled={!hasNext}
+                        className="text-zinc-400 hover:text-white transition-colors disabled:text-zinc-700 disabled:cursor-default"
+                    >
+                        <SkipForward className="w-7 h-7 fill-current" />
+                    </button>
+                </div>
+
+                {/* Divider */}
+                <div className="w-full h-px bg-white/[0.06] mb-6" />
+
+                {/* Track List */}
+                <div className="w-full flex-1">
+                    <div className="flex items-center justify-between mb-4 px-1">
+                        <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-[0.15em]">
+                            再生リスト
+                        </h2>
+                        <span className="text-xs text-zinc-600 tabular-nums">
+                            {audios.length}曲
                         </span>
                     </div>
 
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-pink-200 scrollbar-track-transparent">
+                    <div className="space-y-0.5 max-h-[50vh] overflow-y-auto tracklist-scroll">
                         {audios.map((audio, index) => {
-                            const isPlaying = currentId === audio.id
+                            const isActive = currentIndex === index
                             return (
                                 <button
                                     key={audio.id}
-                                    onClick={() => handlePlay(audio.id)}
-                                    className={`
-                                        group w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden kawaii-btn
-                                        ${isPlaying
-                                            ? 'bg-gradient-to-r from-pink-100 to-purple-100 border-pink-300 shadow-md scale-[1.02]'
-                                            : 'bg-white/60 border-white/50 hover:bg-white/80 hover:border-pink-200 hover:shadow-sm'
-                                        }
-                                    `}
+                                    onClick={() => selectTrack(index)}
+                                    className={`w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-colors ${
+                                        isActive ? 'bg-white/[0.07]' : 'hover:bg-white/[0.04]'
+                                    }`}
                                 >
-
-                                    <div className="flex items-center min-w-0 flex-1 mr-4 z-10">
-                                        <div className={`
-                                            w-10 h-10 rounded-full flex items-center justify-center mr-4 shrink-0 transition-colors shadow-sm
-                                            ${isPlaying ? 'bg-pink-400 text-white' : 'bg-white text-pink-300 group-hover:bg-pink-400 group-hover:text-white'}
-                                        `}>
-                                            <PlayIcon isPlaying={isPlaying} />
-                                        </div>
-
-                                        <div className="flex flex-col items-start truncate">
-                                            <span className={`text-base font-bold transition-colors duration-300 truncate w-full text-left font-mplus ${isPlaying ? 'text-purple-600' : 'text-slate-600 group-hover:text-purple-500'}`}>
-                                                {audio.title}
+                                    {/* Track number / playing indicator */}
+                                    <div className="w-7 flex-shrink-0 text-center">
+                                        {isActive && playing ? (
+                                            <div className="flex items-end justify-center gap-[2px] h-4">
+                                                {[0, 1, 2].map(i => (
+                                                    <div
+                                                        key={i}
+                                                        className="w-[3px] rounded-full animate-eq"
+                                                        style={{
+                                                            animationDelay: `${i * 0.2}s`,
+                                                            backgroundColor: '#fa2d6a'
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className={`text-sm tabular-nums ${isActive ? 'text-rose-500 font-medium' : 'text-zinc-600'}`}>
+                                                {index + 1}
                                             </span>
-                                            <span className="text-[11px] text-slate-400 mt-0.5 flex items-center font-bold tracking-wide group-hover:text-slate-500 transition-colors">
-                                                <Calendar className="w-3 h-3 mr-1" />
-                                                {new Date(audio.created_at).toLocaleDateString()}
-                                            </span>
-                                        </div>
+                                        )}
                                     </div>
 
-                                    <div className={`text-xs font-bold font-mono z-10 ${isPlaying ? 'text-purple-500' : 'text-slate-400'}`}>
-                                        {Math.round((audio.duration_ms ?? 0) / 1000)}s
+                                    {/* Title & date */}
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <p className={`text-sm truncate ${isActive ? 'text-white font-medium' : 'text-zinc-300'}`}>
+                                            {audio.title || 'タイトルなし'}
+                                        </p>
+                                        <p className="text-[11px] text-zinc-600 mt-0.5">
+                                            {new Date(audio.created_at).toLocaleDateString('ja-JP')}
+                                        </p>
                                     </div>
 
-                                    {/* Hover Sparkle Effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+                                    {/* Duration */}
+                                    <span className="text-[11px] text-zinc-600 tabular-nums flex-shrink-0">
+                                        {formatTime((audio.duration_ms ?? 0) / 1000)}
+                                    </span>
                                 </button>
                             )
                         })}
@@ -151,33 +393,12 @@ export function ListenerView({ tag, audios, latestAudioId }: { tag: Tag, audios:
                 </div>
 
                 {/* Footer */}
-                <div className="mt-12 text-center pb-8 opacity-60 hover:opacity-100 transition-opacity">
-                    <p className="text-[10px] text-slate-400 font-mplus font-bold tracking-widest">
-                        Provided by NFCシオリ
+                <div className="mt-8 pb-6 text-center">
+                    <p className="text-[10px] text-zinc-700 tracking-[0.2em] uppercase">
+                        NFC Shiori
                     </p>
                 </div>
             </div>
         </div>
-    )
-}
-
-const PlayIcon = ({ isPlaying }: { isPlaying: boolean }) => {
-    if (isPlaying) {
-        return (
-            <div className="flex space-x-[2px] items-end h-3">
-                <div className="w-1 bg-current animate-[bounce_1s_infinite] h-2"></div>
-                <div className="w-1 bg-current animate-[bounce_1.2s_infinite] h-3"></div>
-                <div className="w-1 bg-current animate-[bounce_0.8s_infinite] h-1"></div>
-            </div>
-        )
-    }
-    return <Play className="w-4 h-4 fill-current ml-0.5" />
-}
-
-function Play({ className }: { className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-            <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
-        </svg>
     )
 }
