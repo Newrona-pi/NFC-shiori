@@ -6,7 +6,8 @@
  *   npx tsx scripts/generate-passwords.ts
  */
 
-import 'dotenv/config'
+import { config } from 'dotenv'
+config({ path: '.env.local' })
 import { createHash, randomBytes } from 'node:crypto'
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
