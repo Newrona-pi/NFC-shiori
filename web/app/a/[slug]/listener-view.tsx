@@ -289,7 +289,7 @@ export function ListenerView({ tag, audios, latestAudioId, artworkUrl }: { tag: 
                         Playing From
                     </p>
                     <p className="text-sm text-zinc-700 font-semibold mt-1">
-                        {tag.display_name || 'NFC Shiori'}
+                        {tag.display_name || 'Otoshirube'}
                     </p>
                 </div>
 
@@ -448,7 +448,7 @@ export function ListenerView({ tag, audios, latestAudioId, artworkUrl }: { tag: 
                 {/* Footer */}
                 <div className="mt-8 pb-6 text-center">
                     <p className="text-[10px] text-zinc-300 tracking-[0.2em] uppercase">
-                        NFC Shiori
+                        Otoshirube
                     </p>
                 </div>
             </div>
