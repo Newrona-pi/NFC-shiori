@@ -23,7 +23,7 @@ const zenKaku = Zen_Kaku_Gothic_New({
 })
 
 export const metadata: Metadata = {
-    title: 'NFC Shiori',
+    title: 'おとしるべ',
     description: 'Listen to exclusive moments via NFC.',
 }
 

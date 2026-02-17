@@ -5,6 +5,12 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { logoutAction } from '@/app/studio/(auth)/login/actions'
 import { LogOut } from 'lucide-react'
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'おとしるべスタジオ',
+}
+
 export default async function StudioLayout({
   children,
 }: {
@@ -39,7 +45,7 @@ export default async function StudioLayout({
               </svg>
             </div>
             <span className="text-sm font-semibold tracking-tight text-[var(--s-text)] group-hover:text-[var(--s-accent)] transition-colors">
-              NFC Studio
+              おとしるべスタジオ
             </span>
           </Link>
 

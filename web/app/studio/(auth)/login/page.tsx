@@ -7,6 +7,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid: '無効なパスワードです',
 }
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'おとしるべスタジオ',
+}
+
 export default async function LoginPage({
   searchParams,
 }: {
@@ -27,7 +33,7 @@ export default async function LoginPage({
               <line x1="12" x2="12" y1="19" y2="22" />
             </svg>
           </div>
-          <h1 className="text-xl font-semibold tracking-tight">NFC Studio</h1>
+          <h1 className="text-xl font-semibold tracking-tight">おとしるべスタジオ</h1>
           <p className="text-sm text-[var(--s-text-muted)] mt-1.5">
             配布されたパスワードでログイン
           </p>
