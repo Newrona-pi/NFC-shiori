@@ -3,9 +3,8 @@ import { getStudioSession } from '@/lib/auth/session'
 import { createServiceClient } from '@/lib/supabase/server'
 import { FileUploader } from './file-uploader'
 import { ArtworkUploader } from './artwork-uploader'
-import { updateDisplayName } from './actions'
+import { DisplayNameForm } from './display-name-form'
 import { DeleteAudioButton } from './delete-audio-button'
-import { SubmitButton } from '@/components/submit-button'
 import { Clock, Music, Link as LinkIcon } from 'lucide-react'
 
 export default async function StudioDashboardPage() {
@@ -45,18 +44,7 @@ export default async function StudioDashboardPage() {
     <div className="space-y-4">
       {/* Row 1: Settings — Display name + NFC URL */}
       <div className="s-card p-3 flex flex-col sm:flex-row sm:items-center gap-3">
-        <form action={updateDisplayName} className="flex gap-2 flex-1 min-w-0">
-          <input type="hidden" name="tagId" value={tag.id} />
-          <input
-            name="display_name"
-            defaultValue={tag.display_name || ''}
-            placeholder="チャンネル名"
-            className="s-input flex-1 text-sm min-w-0"
-          />
-          <SubmitButton pendingText="保存中..." className="s-btn s-btn-primary text-xs shrink-0">
-            保存
-          </SubmitButton>
-        </form>
+        <DisplayNameForm tagId={tag.id} savedName={tag.display_name || ''} />
         <div className="flex items-center gap-2 sm:border-l sm:border-[var(--s-border)] sm:pl-3 min-w-0">
           <LinkIcon className="w-3.5 h-3.5 text-[var(--s-text-muted)] shrink-0" />
           <code className="text-[11px] text-[var(--s-text-muted)] truncate select-all" title={listenerUrl}>
